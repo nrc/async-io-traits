@@ -1,0 +1,11 @@
+[package]
+name = "async-io-traits"
+version = "0.1.0"
+description = "Async versions of io traits"
+license = "MIT OR Apache-2.0"
+edition = "2021"
+authors = ["nrc <nrc@ncameron.org>"]
+repository = "https://github.com/nrc/async-io-traits"
+
+[dependencies]
+owned-buf = "0.1"
