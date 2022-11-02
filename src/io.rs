@@ -1,8 +1,8 @@
 pub use owned_buf::OwnedBuf;
 pub use std::io::Result;
 
-use core::fmt;
-use std::io::{BorrowedCursor, IoSliceMut, SeekFrom};
+use core::fmt::{self, Arguments};
+use std::io::{BorrowedCursor, IoSlice, IoSliceMut, SeekFrom};
 
 // A simple async-ification of sync Read plus downcasting methods.
 pub trait Read {
@@ -153,16 +153,52 @@ impl fmt::Debug for Readiness {
 
 pub trait BufRead: Read {
     async fn fill_buf(&mut self) -> Result<&[u8]>;
+
     fn consume(&mut self, amt: usize);
 
     async fn read_until(&mut self, byte: u8, buf: &mut Vec<u8>) -> Result<usize> {
         unimplemented!()
     }
+
     async fn read_line(&mut self, buf: &mut String) -> Result<usize> {
         unimplemented!()
     }
+
     // #[unstable]
     async fn has_data_left(&mut self) -> Result<bool> {
+        unimplemented!()
+    }
+}
+
+pub trait Write {
+    async fn write(&mut self, buf: &[u8]) -> Result<usize>;
+
+    async fn flush(&mut self) -> Result<()>;
+
+    async fn write_vectored(&mut self, bufs: &[IoSlice<'_>]) -> Result<usize> {
+        unimplemented!()
+    }
+
+    fn is_write_vectored(&self) -> bool {
+        unimplemented!()
+    }
+
+    async fn write_all(&mut self, buf: &[u8]) -> Result<()> {
+        unimplemented!()
+    }
+
+    async fn write_all_vectored(&mut self, bufs: &mut [IoSlice<'_>]) -> Result<()> {
+        unimplemented!()
+    }
+
+    async fn write_fmt(&mut self, fmt: Arguments<'_>) -> Result<()> {
+        unimplemented!()
+    }
+
+    fn by_ref(&mut self) -> &mut Self
+    where
+        Self: Sized,
+    {
         unimplemented!()
     }
 }
@@ -173,9 +209,11 @@ pub trait Seek {
     async fn rewind(&mut self) -> Result<()> {
         unimplemented!()
     }
+
     async fn stream_len(&mut self) -> Result<u64> {
         unimplemented!()
     }
+
     async fn stream_position(&mut self) -> Result<u64> {
         unimplemented!()
     }
