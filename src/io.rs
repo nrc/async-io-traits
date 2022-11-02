@@ -2,7 +2,7 @@ pub use owned_buf::OwnedBuf;
 pub use std::io::Result;
 
 use core::fmt;
-use std::io::{BorrowedCursor, IoSliceMut};
+use std::io::{BorrowedCursor, IoSliceMut, SeekFrom};
 
 // A simple async-ification of sync Read plus downcasting methods.
 pub trait Read {
@@ -147,6 +147,36 @@ impl Readiness {
 
 impl fmt::Debug for Readiness {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        unimplemented!()
+    }
+}
+
+pub trait BufRead: Read {
+    async fn fill_buf(&mut self) -> Result<&[u8]>;
+    fn consume(&mut self, amt: usize);
+
+    async fn read_until(&mut self, byte: u8, buf: &mut Vec<u8>) -> Result<usize> {
+        unimplemented!()
+    }
+    async fn read_line(&mut self, buf: &mut String) -> Result<usize> {
+        unimplemented!()
+    }
+    // #[unstable]
+    async fn has_data_left(&mut self) -> Result<bool> {
+        unimplemented!()
+    }
+}
+
+pub trait Seek {
+    async fn seek(&mut self, pos: SeekFrom) -> Result<u64>;
+
+    async fn rewind(&mut self) -> Result<()> {
+        unimplemented!()
+    }
+    async fn stream_len(&mut self) -> Result<u64> {
+        unimplemented!()
+    }
+    async fn stream_position(&mut self) -> Result<u64> {
         unimplemented!()
     }
 }
