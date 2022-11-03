@@ -1,33 +1,44 @@
+//! Traits for async IO
+//!
+//! TODO module docs
+
 pub use owned_buf::OwnedBuf;
 pub use std::io::Result;
 
 use core::fmt::{self, Arguments};
 use std::io::{BorrowedCursor, IoSlice, IoSliceMut, SeekFrom};
 
-// A simple async-ification of sync Read plus downcasting methods.
+/// A simple async-ification of sync Read plus downcasting methods.
 pub trait Read {
     async fn read(&mut self, buf: &mut [u8]) -> Result<usize>;
+
     async fn read_vectored(&mut self, bufs: &mut [IoSliceMut<'_>]) -> Result<usize> {
         unimplemented!()
     }
+
     async fn read_buf(&mut self, buf: &mut BorrowedCursor<'_>) -> Result<()> {
         unimplemented!()
     }
+
     async fn read_exact(&mut self, buf: &mut [u8]) -> Result<()> {
         unimplemented!()
     }
+
     async fn read_buf_exact(&mut self, buf: &mut BorrowedCursor<'_>) -> Result<()> {
         unimplemented!()
     }
-    // async fn read_buf_vectored(&mut self, bufs: &mut BorrowedSliceCursor<'_>) -> Result<usize> { unimplemented!() }
+
+    // async fn read_buf_vectored(&mut self, bufs: &mut BorrowedSliceCursor<'_>) -> Result<usize> {
+    //     unimplemented!()
+    // }
+
     async fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
         unimplemented!()
     }
+
     async fn read_to_string(&mut self, buf: &mut String) -> Result<usize> {
         unimplemented!()
     }
-
-    // TODO iterator methods
 
     fn is_read_vectored(&self) -> bool {
         false
@@ -71,9 +82,11 @@ pub trait Read {
 // Used for completion model systems.
 pub trait OwnedRead: Read {
     async fn read(&mut self, buf: OwnedBuf) -> (OwnedBuf, Result<()>);
+
     async fn read_exact(&mut self, buf: OwnedBuf) -> (OwnedBuf, Result<()>) {
         unimplemented!()
     }
+
     async fn read_to_end(&mut self, buf: Vec<u8>) -> (Vec<u8>, Result<usize>) {
         unimplemented!()
     }
@@ -88,7 +101,10 @@ pub trait Ready {
 
 pub trait ReadyRead: Ready + Read {
     fn non_blocking_read(&mut self, buf: &mut BorrowedCursor<'_>) -> Result<NonBlocking<()>>;
-    // fn non_blocking_read_vectored(&mut self, bufs: &mut BorrowedSliceCursor<'_>) -> Result<NonBlocking<()>> { unimplemented!() }
+
+    // fn non_blocking_read_vectored(&mut self, bufs: &mut BorrowedSliceCursor<'_>) -> Result<NonBlocking<()>> {
+    //     unimplemented!()
+    // }
 
     // TODO do we want async convenience methods here? Or should use those on Read?
     // read, read_vectored, read_exact, read_to_end
@@ -223,7 +239,7 @@ pub trait ReadyWrite: Ready + Write {
 // Used for completion model systems.
 pub trait OwnedWrite: Write {
     async fn write(&mut self, buf: OwnedBuf) -> (OwnedBuf, Result<()>);
-    
+
     async fn write_all(&mut self, buf: OwnedBuf) -> (OwnedBuf, Result<()>) {
         unimplemented!()
     }
