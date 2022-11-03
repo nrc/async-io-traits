@@ -88,7 +88,7 @@ pub trait Ready {
 
 pub trait ReadyRead: Ready + Read {
     fn non_blocking_read(&mut self, buf: &mut BorrowedCursor<'_>) -> Result<NonBlocking<()>>;
-    // fn non_blocking_read_vectored(&mut self, bufs: &mut BorrowedSliceCursor<'_>) -> Result<NonBlocking<usize>> { unimplemented!() }
+    // fn non_blocking_read_vectored(&mut self, bufs: &mut BorrowedSliceCursor<'_>) -> Result<NonBlocking<()>> { unimplemented!() }
 
     // TODO do we want async convenience methods here? Or should use those on Read?
     // read, read_vectored, read_exact, read_to_end
@@ -122,14 +122,18 @@ impl fmt::Debug for Interest {
 }
 
 impl Readiness {
+    const READ: Readiness = Readiness(1);
+    const WRITE: Readiness = Readiness(2);
+    const HUP: Readiness = Readiness(0x10);
+
     /// The resource is ready to read from.
     pub fn read(self) -> bool {
-        unimplemented!()
+        self.0 & Self::READ.0 != 0
     }
 
     ///  The resource is ready to write to.
     pub fn write(self) -> bool {
-        unimplemented!()
+        self.0 & Self::WRITE.0 != 0
     }
 
     /// The resource has hung up.
@@ -141,7 +145,7 @@ impl Readiness {
     /// Note that the user does not need to request an interest in hup notifications, they may always
     /// be returned
     pub fn hup(self) -> bool {
-        unimplemented!()
+        self.0 & Self::HUP.0 != 0
     }
 }
 
@@ -201,6 +205,30 @@ pub trait Write {
     {
         unimplemented!()
     }
+}
+
+pub trait ReadyWrite: Ready + Write {
+    fn non_blocking_write(&mut self, buf: &[u8]) -> Result<NonBlocking<usize>>;
+
+    fn non_blocking_flush(&mut self) -> Result<NonBlocking<()>>;
+
+    fn non_blocking_write_vectored(&mut self, bufs: &[IoSlice<'_>]) -> Result<NonBlocking<usize>> {
+        unimplemented!()
+    }
+
+    // TODO do we want async convenience methods here? Or should use those on Write?
+    // flush, write, write_vectored, write_all, write_all_vectored, write_fmt
+}
+
+// Used for completion model systems.
+pub trait OwnedWrite: Write {
+    async fn write(&mut self, buf: OwnedBuf) -> (OwnedBuf, Result<()>);
+    
+    async fn write_all(&mut self, buf: OwnedBuf) -> (OwnedBuf, Result<()>) {
+        unimplemented!()
+    }
+
+    // write_vectored, write_all_vectored - future work
 }
 
 pub trait Seek {
